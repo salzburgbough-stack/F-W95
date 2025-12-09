@@ -7,7 +7,7 @@
         <span>{{ icon.name }}</span>
       </div>
     </div>
-
+这是一次改动测试
     <!-- 打开的程序窗口 -->
     <component v-for="program in programs" :is="program.component" v-show="program.isOpen" :key="program.name"
       v-bind="program.props"  @bring-to-front="bringToFront(program)" @close="closeProgram(program.name)"
