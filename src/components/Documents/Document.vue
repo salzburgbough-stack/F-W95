@@ -23,7 +23,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-
+const zIndex = computed(() => props.zIndex)
 const emit = defineEmits(['close', 'bring-to-front'])
 const props = defineProps({
   documents: Array,
@@ -58,7 +58,7 @@ const windowStyle = computed(() => ({
   top: isMaximized.value ? '0px' : initialTop.value + 'px',
   width: isMaximized.value ? '100%' : width.value + 'px',
   height: isMaximized.value ? '100%' : height.value + 'px',
-  zIndex: props.zIndex || 10
+  zIndex: zIndex.value   // 用 computed 的值替代 props.zIndex
 }))
 
 // ----------------------

@@ -28,7 +28,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-
+const reactiveZIndex = computed(() => props.zIndex)  // 响应父组件的 zIndex
 const props = defineProps({
   zIndex: Number  // 父组件传入的层级
 })
@@ -63,9 +63,8 @@ const windowStyle = computed(() => ({
   top: isMaximized.value ? '0px' : initialTop.value + 'px',
   width: isMaximized.value ? '100%' : width.value + 'px',
   height: isMaximized.value ? '100%' : height.value + 'px',
-  zIndex: props.zIndex || 10
+  zIndex: reactiveZIndex.value  // 替换原来的 props.zIndex
 }))
-
 // ----------------------
 // 拖动逻辑
 // ----------------------

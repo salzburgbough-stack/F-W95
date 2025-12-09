@@ -56,12 +56,13 @@ let isDragging = false;
 let offsetX = 0;
 let offsetY = 0;
 
+const zIndex = computed(() => props.zIndex) // 确保响应式
 const windowStyle = computed(() => ({
   left: initialLeft.value + 'px',
   top: initialTop.value + 'px',
   width: width.value + 'px',
   height: height.value + 'px',
-  zIndex: props.zIndex || 10
+  zIndex: zIndex.value
 }));
 
 const onMouseDownDrag = (e) => {

@@ -22,7 +22,7 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-
+const reactiveZIndex = computed(() => props.zIndex)  // 响应父组件的 zIndex
 const emit = defineEmits(['close', 'bring-to-front'])
 const props = defineProps({
   ieLeft: Number,
@@ -56,7 +56,7 @@ const windowStyle = computed(() => ({
   top: isMaximized.value ? '0px' : initialTop.value + 'px',
   width: isMaximized.value ? '100%' : width.value + 'px',
   height: isMaximized.value ? '100%' : height.value + 'px',
-  zIndex: props.zIndex || 10
+  zIndex: reactiveZIndex.value  // 替换原来的 props.zIndex
 }))
 
 // ----------------------

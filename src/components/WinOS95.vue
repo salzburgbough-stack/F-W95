@@ -10,12 +10,12 @@
 
     <!-- 打开的程序窗口 -->
     <component v-for="program in programs" :is="program.component" v-show="program.isOpen" :key="program.name"
-      v-bind="program.props" @mousedown.native="bringToFront(program)" @close="closeProgram(program.name)"
+      v-bind="program.props"  @bring-to-front="bringToFront(program)" @close="closeProgram(program.name)"
       @search="handleSearch" @send="handleChatInput(program.name, $event)" @input-change="handleIEInput"
       class="component-window" />
     <!-- 动态窗口（例如 IE 搜索结果窗口） -->
     <component v-for="win in dynamicWindows" :is="win.component" :key="win.id" v-bind="win.props"
-      @mousedown.native="bringToFront(win)" @close="closeDynamicWindow(win.id)" class="component-window" />
+     @bring-to-front="bringToFront(win)" @close="closeDynamicWindow(win.id)" class="component-window" />
 
     <!-- 任务栏 -->
     <div id="taskbar">
@@ -79,32 +79,40 @@ const icons = reactive([
 
 // 程序窗口
 const programs = reactive([
-  { name: 'IE 浏览器', component: IE, isOpen: false, props: { zIndex: topZIndex.value } },
+  { name: 'IE 浏览器', component: IE, isOpen: false, props: reactive({ zIndex: topZIndex.value }) },
   { name: 'MIMES 95', component: MIMES95, isOpen: false, props: reactive({ messages: [], zIndex: topZIndex.value }) },
-  { name: '我的文档', component: Documents, isOpen: false, props: { documents: [], zIndex: topZIndex.value } },
-  { name: '我的电脑', component: MyComputer, isOpen: false, props: { zIndex: topZIndex.value } },
-  { name: '回收站', component: TrashCan, isOpen: false, props: { zIndex: topZIndex.value } },
+  { name: '我的文档', component: Documents, isOpen: false, props: reactive({ documents: [], zIndex: topZIndex.value }) },
+  { name: '我的电脑', component: MyComputer, isOpen: false, props: reactive({ zIndex: topZIndex.value }) },
+  { name: '回收站', component: TrashCan, isOpen: false, props: reactive({ zIndex: topZIndex.value }) },
 ]);
+
 // 用于记录已经触发过的关键词
 const triggeredKeywords = reactive(new Set());
 
 // 点击或拖动窗口置顶
 function bringToFront(window) {
   topZIndex.value++
-  window.props = window.props || {}
-  window.props.zIndex = topZIndex.value
+  // window.props 一定要是 reactive 对象
+  if (!window.props) {
+    window.props = reactive({ zIndex: topZIndex.value })
+  } else {
+    window.props.zIndex = topZIndex.value
+  }
 }
+
 // 打开动态窗口
 function openDynamicWindow(component, props = {}) {
   const win = {
     id: Date.now() + Math.random(),
     component,
-    props: { ...props, zIndex: topZIndex.value + 1 } // 初始比topZIndex高
+    // 这里用 reactive 包裹 props
+    props: reactive({ ...props, zIndex: topZIndex.value + 1 })
   }
   topZIndex.value++
   dynamicWindows.push(win)
   bringToFront(win)
 }
+
 function closeDynamicWindow(id) {
   const index = dynamicWindows.findIndex(win => win.id === id);
   if (index !== -1) dynamicWindows.splice(index, 1);
@@ -114,6 +122,7 @@ function closeDynamicWindow(id) {
 function openProgram(name) {
   const program = programs.find(p => p.name === name);
   if (program) program.isOpen = true;
+  bringToFront(program)  // 新增：打开时直接置顶
 }
 
 // 关闭程序
