@@ -9,7 +9,7 @@
     </div>
     <!-- 打开的程序窗口 -->
     <component v-for="program in programs" :is="program.component" v-show="program.isOpen" :key="program.name"
-      v-bind="program.props"  @bring-to-front="bringToFront(program)" @close="closeProgram(program.name)"
+      v-bind="program.props"  @open-contact="openChatWithContact" @bring-to-front="bringToFront(program)" @close="closeProgram(program.name)"
       @search="handleSearch" @send="handleChatInput(program.name, $event)" @input-change="handleIEInput"
       class="component-window" />
     <!-- 动态窗口（例如 IE 搜索结果窗口） -->
@@ -43,6 +43,8 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue';
 import IE from './IE/IE.vue';
+import MIMES95List from './Chat/MIMES95List.vue';
+import MIMES95Alert from './Chat/MIMES95Alert.vue';
 import MIMES95 from './Chat/MIMES95.vue';
 import Documents from './Documents/Document.vue';
 import MyComputer from './MyComputer/MyComputer.vue';
@@ -79,6 +81,7 @@ const icons = reactive([
 // 程序窗口
 const programs = reactive([
   { name: 'IE 浏览器', component: IE, isOpen: false, props: reactive({ zIndex: topZIndex.value }) },
+  { name: 'MIMES 95 列表', component: MIMES95List, isOpen: false, props: reactive({ zIndex: topZIndex.value }) },
   { name: 'MIMES 95', component: MIMES95, isOpen: false, props: reactive({ messages: [], zIndex: topZIndex.value }) },
   { name: '我的文档', component: Documents, isOpen: false, props: reactive({ documents: [], zIndex: topZIndex.value }) },
   { name: '我的电脑', component: MyComputer, isOpen: false, props: reactive({ zIndex: topZIndex.value }) },
@@ -119,9 +122,18 @@ function closeDynamicWindow(id) {
 
 // 打开程序
 function openProgram(name) {
+  if (name === 'MIMES 95') {
+    const list = programs.find(p => p.name === 'MIMES 95 列表');
+    if (list) {
+      list.isOpen = true;
+      bringToFront(list);
+    }
+    return;
+  }
+  // 其他程序保持原样
   const program = programs.find(p => p.name === name);
   if (program) program.isOpen = true;
-  bringToFront(program)  // 新增：打开时直接置顶
+  bringToFront(program);
 }
 
 // 关闭程序
@@ -164,6 +176,38 @@ function handleSearch(keyword) {
   }
 }
 
+function openChatWithContact(contact) {
+  if (contact.name === '爸' || contact.name === '妈') {
+    // 创建新窗口 ID
+    const id = Date.now() + Math.random()
+
+    // 统计已有 MIMES95Alert 弹窗数量
+    const alertWindows = dynamicWindows.filter(win => win.component?.__file?.includes('MIMES95Alert.vue'))
+    const existingCount = alertWindows.length
+
+    const baseLeft = 250
+    const baseTop = 200
+    const offset = 20
+
+    const left = baseLeft + existingCount * offset
+    const top = baseTop + existingCount * offset
+
+    openDynamicWindow(MIMES95Alert, {
+      id,
+      zIndex: topZIndex.value,
+      left,
+      top,
+      width: 300,
+      height: 150
+    })
+  } else if (contact.name === '用户89757') {
+    const chat = programs.find(p => p.name === 'MIMES 95')
+    if (!chat) return
+    chat.props.activeContact = contact
+    chat.isOpen = true
+    bringToFront(chat)
+  }
+}
 
 // 我的电脑点击盘符事件
 function handleDiskClick(diskName) {
